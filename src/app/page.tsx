@@ -1,5 +1,7 @@
-import { filterEvents } from "@/lib/events";
+
+import { headers } from "next/headers";
 import { DashboardClient } from "@/components/DashboardClient";
+import type { SystemEvent } from "@/lib/mockData";
 
 export default async function DashboardPage({
   searchParams,
@@ -9,7 +11,21 @@ export default async function DashboardPage({
   const params = await searchParams;
   const search = params.search ?? "";
   const severity = params.severity ?? "all";
-  const events = filterEvents(search, severity);
 
-  return <DashboardClient events={events} search={search} severity={severity} />;
+  // Server Components need an absolute URL; derive it from the incoming request.
+  const h = await headers();
+  const host = h.get("host") ?? "localhost:3000";
+  const proto = h.get("x-forwarded-proto") ?? "http";
+
+  const qs = new URLSearchParams();
+  if (search) qs.set("search", search);
+  if (severity !== "all") qs.set("severity", severity);
+
+  const res = await fetch(`${proto}://${host}/api/events?${qs.toString()}`, {
+    cache: "no-store",
+  });
+  console.debug("res", res);
+  const data = (await res.json()) as { events: SystemEvent[]; total: number };
+
+  return <DashboardClient events={data.events} search={search} severity={severity} />;
 }
