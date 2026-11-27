@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import type { SystemEvent } from "@/lib/mockData";
 import { FilterBar } from "@/components/FilterBar";
 import { EventList } from "@/components/EventList";
@@ -10,9 +10,12 @@ interface DashboardClientProps {
   events: SystemEvent[];
   search: string;
   severity: string;
+
 }
 
 export function DashboardClient({ events, search, severity }: DashboardClientProps) {
+  const renders = useRef(0);
+  renders.current += 1;
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const handleSelect = useCallback((id: string) => setSelectedId(id), []);
@@ -30,7 +33,7 @@ export function DashboardClient({ events, search, severity }: DashboardClientPro
           overflow: "hidden",
         }}
       >
-        <FilterBar search={search} severity={severity} />
+        <FilterBar search={search} severity={severity} renders={renders} />
         <EventList events={events} selectedId={selectedId} onSelect={handleSelect} />
       </div>
       <SummaryPanel event={selectedEvent} filtersKey={filtersKey} />

@@ -2,10 +2,12 @@
 
 import React, { memo, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { MutableRefObject } from "react";
 
 interface FilterBarProps {
   search: string;
   severity: string;
+  renders: MutableRefObject<number>;
 }
 
 function buildQuery(search: string, severity: string) {
@@ -16,11 +18,10 @@ function buildQuery(search: string, severity: string) {
   return qs ? `/?${qs}` : "/";
 }
 
-export const FilterBar = memo(function FilterBar({ search, severity }: FilterBarProps) {
+export const FilterBar = memo(function FilterBar({ search, severity, renders }: FilterBarProps) {
   const router = useRouter();
   const [draft, setDraft] = useState(search);
-  const renders = useRef(0);
-  renders.current += 1;
+
 
   // URL is the source of truth: mirror committed params back into the draft
   // (covers mount, debounce completion, and Back/Forward navigation).
